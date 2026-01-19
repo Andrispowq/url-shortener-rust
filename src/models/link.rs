@@ -7,7 +7,7 @@ pub struct Link {
     pub code: String,
     pub target_url: String,
     pub created_at: DateTime<Utc>,
-    pub clicks: u64
+    pub clicks: u64,
 }
 
 impl Link {
@@ -17,7 +17,7 @@ impl Link {
             code,
             target_url,
             created_at: Utc::now(),
-            clicks: 0
+            clicks: 0,
         }
     }
     pub fn increase_clicks(&mut self) {

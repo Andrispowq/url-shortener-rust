@@ -1,11 +1,42 @@
+mod api;
+mod dto;
 mod models;
 mod persistence;
-mod api;
 mod service;
-mod dto;
 
-use models::link::Link;
+use std::sync::Arc;
 
-fn main() {
-    println!("Hello, world!");
+use axum::{
+    Router,
+    routing::{get, post},
+};
+use tokio::sync::Mutex;
+
+use crate::api::links::{LinkServiceState, create_link, visit_link};
+use crate::persistence::in_memory_store::InMemoryStore;
+use crate::service::code_generator::CodeGenerator;
+use crate::service::link_service::LinkService;
+
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
+
+    let state: LinkServiceState = Arc::new(Mutex::new(LinkService::new(
+        InMemoryStore::new(),
+        CodeGenerator::new(6),
+    )));
+
+    let app = Router::new()
+        .route("/links", post(create_link))
+        .route("/r/:code", get(visit_link))
+        .with_state(state);
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
+        .await
+        .expect("failed to bind listener");
+    tracing::info!("listening on {}", listener.local_addr().unwrap());
+
+    axum::serve(listener, app).await.expect("server failed");
 }

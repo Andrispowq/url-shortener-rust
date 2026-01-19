@@ -1,5 +1,5 @@
-use rand::{thread_rng, Rng};
 use rand::rngs::ThreadRng;
+use rand::{Rng, thread_rng};
 
 pub struct CodeGenerator {
     length: usize,
@@ -10,11 +10,7 @@ impl CodeGenerator {
         CodeGenerator { length }
     }
 
-    fn random_bytes_from_alphabet(
-        &self,
-        rng: &mut ThreadRng,
-        alphabet: &[u8],
-    ) -> Vec<u8> {
+    fn random_bytes_from_alphabet(&self, rng: &mut ThreadRng, alphabet: &[u8]) -> Vec<u8> {
         assert!(!alphabet.is_empty(), "alphabet must not be empty");
 
         let mut out = Vec::with_capacity(self.length);

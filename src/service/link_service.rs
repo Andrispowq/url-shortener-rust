@@ -1,5 +1,5 @@
-use crate::dto::link_dto::Dto;
 use crate::dto::create_link_dto::CreateLinkDto;
+use crate::dto::link_dto::Dto;
 use crate::dto::link_dto::LinkDto;
 use crate::models::link::Link;
 use crate::persistence::in_memory_store::{InMemoryStore, Storage};
@@ -15,6 +15,12 @@ pub struct LinkService {
     generator: CodeGenerator,
 }
 
+impl LinkService {
+    pub fn new(store: InMemoryStore, generator: CodeGenerator) -> LinkService {
+        LinkService { store, generator }
+    }
+}
+
 impl LinkServiceTrait for LinkService {
     fn create_link(&mut self, dto: CreateLinkDto) -> Result<LinkDto, String> {
         let link = Link::new(self.generator.generate()?, dto.target);
@@ -24,7 +30,8 @@ impl LinkServiceTrait for LinkService {
     }
 
     fn visit_link(&mut self, code: String) -> Result<LinkDto, String> {
-        let link = self.store
+        let link = self
+            .store
             .get_by_code_mut(&code)
             .ok_or_else(|| "No such link".to_string())?;
         link.increase_clicks();
@@ -37,10 +44,7 @@ mod tests {
     use super::*;
 
     fn build_service(length: usize) -> LinkService {
-        LinkService {
-            store: InMemoryStore::new(),
-            generator: CodeGenerator::new(length),
-        }
+        LinkService::new(InMemoryStore::new(), CodeGenerator::new(length))
     }
 
     fn make_create_dto(target: &str) -> CreateLinkDto {

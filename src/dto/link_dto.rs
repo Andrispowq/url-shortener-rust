@@ -1,14 +1,14 @@
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
 pub(crate) use crate::dto::dto::Dto;
 use crate::models::link::Link;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LinkDto {
     pub code: String,
     pub target_url: String,
     pub created_at: DateTime<Utc>,
-    pub clicks: u64
+    pub clicks: u64,
 }
 
 impl Dto<LinkDto> for Link {

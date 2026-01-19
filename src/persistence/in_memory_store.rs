@@ -1,18 +1,18 @@
-use std::collections::HashMap;
-use uuid::Uuid;
 use crate::models::link::Link;
 pub(crate) use crate::persistence::storage::Storage;
+use std::collections::HashMap;
+use uuid::Uuid;
 
 pub struct InMemoryStore {
     links: HashMap<Uuid, Link>,
-    code_to_id: HashMap<String, Uuid>
+    code_to_id: HashMap<String, Uuid>,
 }
 
 impl InMemoryStore {
     pub fn new() -> InMemoryStore {
         InMemoryStore {
             links: HashMap::new(),
-            code_to_id: HashMap::new()
+            code_to_id: HashMap::new(),
         }
     }
 }
@@ -37,7 +37,7 @@ impl Storage<Link> for InMemoryStore {
         let id = self.code_to_id.get(code);
         match id {
             Some(id) => self.links.get(id),
-            None => None
+            None => None,
         }
     }
 
