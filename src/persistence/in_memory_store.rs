@@ -8,6 +8,15 @@ pub struct InMemoryStore {
     code_to_id: HashMap<String, Uuid>
 }
 
+impl InMemoryStore {
+    pub fn new() -> InMemoryStore {
+        InMemoryStore {
+            links: HashMap::new(),
+            code_to_id: HashMap::new()
+        }
+    }
+}
+
 impl Storage<Link> for InMemoryStore {
     fn load_all(&self) -> Vec<&Link> {
         self.links.values().collect()
@@ -24,7 +33,7 @@ impl Storage<Link> for InMemoryStore {
         self.links.get(id)
     }
 
-    fn get_by_code(&mut self, code: &String) -> Option<&Link> {
+    fn get_by_code(&mut self, code: &str) -> Option<&Link> {
         let id = self.code_to_id.get(code);
         match id {
             Some(id) => self.links.get(id),

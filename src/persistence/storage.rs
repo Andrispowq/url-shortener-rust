@@ -1,10 +1,10 @@
 use uuid::Uuid;
 
-pub trait Storage<T: Clone> {
+pub trait Storage<T> {
     fn load_all(&self) -> Vec<&T>;
     fn store(&mut self, value: T);
 
     fn get_by_id(&self, id: &Uuid) -> Option<&T>;
-    fn get_by_code(&mut self, code: &String) -> Option<&T>;
+    fn get_by_code(&mut self, code: &str) -> Option<&T>;
     fn get_by_code_mut(&mut self, code: &str) -> Option<&mut T>;
 }

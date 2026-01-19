@@ -1,0 +1,10 @@
+# AI-Generated Suggestions
+
+1. **`InMemoryStore` still cannot be instantiated** (`src/persistence/in_memory_store.rs`). Provide a `new()` or `Default` implementation that initializes the two `HashMap`s and make the struct `pub` so services/tests can construct it without reaching into module internals.
+2. **Storage trait ergonomics remain uneven** (`src/persistence/storage.rs`). `get_by_code` still accepts `&String` and clones keys, while `get_by_code_mut` already uses `&str`. Align the signatures (and remove the `T: Clone` bound if unused) to avoid needless allocations and trait bounds.
+3. **Short-code generation is hardcoded** (`src/service/link_service.rs:17`). `LinkService::create_link` still inserts `"todo"` for every link, so duplicate requests collide immediately. Introduce a generator trait (nanoid, hashids, etc.) or delegate slug creation to the persistence layer.
+4. **LinkService owns a concrete store with no constructor** (`src/service/link_service.rs:12`). Expose `pub struct LinkService<S: Storage<Link>>` plus a `new(store: S)` so tests can swap implementations (e.g., a mock or database-backed store) instead of being forced to use the in-memory variant.
+5. **Error handling remains `String`-based** (same file). Define a small `enum LinkError { NotFound, CodeCollision, ... }` implementing `Display`/`Error` to keep higher layers from relying on brittle string comparisons.
+6. **`CreateLinkDto` lacks serde derives** (`src/dto/create_link_dto.rs`). Without `#[derive(Serialize, Deserialize)]` (and validation), HTTP handlers will not be able to deserialize request payloads directly.
+7. **API format is still underspecified** (`src/dto/link_dto.rs`). Document or encode the timestamp format (e.g., ISO-8601 string) so clients do not have to depend on chrono’s default serializer.
+8. **Async boundaries are missing despite Tokio dependency** (`Cargo.toml`). Once Axum handlers arrive, revisit the service/storage traits to be async-friendly (`async_trait` or explicit futures) so you do not need a sweeping signature rewrite later.

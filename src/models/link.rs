@@ -11,7 +11,7 @@ pub struct Link {
 }
 
 impl Link {
-    pub fn new(code: String, target_url: String, clicks: u64) -> Link {
+    pub fn new(code: String, target_url: String) -> Link {
         Link {
             id: Uuid::now_v7(),
             code,
