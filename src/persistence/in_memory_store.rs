@@ -1,11 +1,12 @@
 use crate::models::link::Link;
 pub(crate) use crate::persistence::storage::Storage;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use uuid::Uuid;
 
 pub struct InMemoryStore {
     links: HashMap<Uuid, Link>,
     code_to_id: HashMap<String, Uuid>,
+    unique_targets: HashSet<String>,
 }
 
 impl InMemoryStore {
@@ -13,6 +14,7 @@ impl InMemoryStore {
         InMemoryStore {
             links: HashMap::new(),
             code_to_id: HashMap::new(),
+            unique_targets: HashSet::new(),
         }
     }
 }
@@ -22,11 +24,17 @@ impl Storage<Link> for InMemoryStore {
         self.links.values().collect()
     }
 
-    fn store(&mut self, value: Link) {
+    fn store(&mut self, value: Link) -> Result<Link, String> {
+        let target = value.target_url.clone();
+        if !self.unique_targets.insert(target) {
+            return Err(String::from("Target already exists"));
+        }
+
         let code = value.code.clone();
         let id = value.id.clone();
-        self.links.insert(id, value);
+        self.links.insert(id, value.clone());
         self.code_to_id.insert(code, id);
+        Ok(value)
     }
 
     fn get_by_id(&self, id: &Uuid) -> Option<&Link> {

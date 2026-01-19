@@ -1,5 +1,5 @@
 use rand::rngs::ThreadRng;
-use rand::{Rng, thread_rng};
+use rand::Rng;
 
 pub struct CodeGenerator {
     length: usize,
@@ -23,13 +23,14 @@ impl CodeGenerator {
 
     pub fn generate(&self) -> Result<String, String> {
         const ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxzy";
-        let result = self.random_bytes_from_alphabet(&mut thread_rng(), ALPHABET);
+        let result = self.random_bytes_from_alphabet(&mut rand::rng(), ALPHABET);
         String::from_utf8(result).map_err(|e| e.to_string())
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use rand::rng;
     use super::*;
 
     #[test]
@@ -44,7 +45,7 @@ mod tests {
 
     #[test]
     fn random_bytes_from_alphabet_respects_supplied_alphabet() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let generator = CodeGenerator::new(4);
 
         let bytes = generator.random_bytes_from_alphabet(&mut rng, b"a");
@@ -55,7 +56,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "alphabet must not be empty")]
     fn random_bytes_from_alphabet_panics_on_empty_alphabet() {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         let generator = CodeGenerator::new(4);
 
         let _ = generator.random_bytes_from_alphabet(&mut rng, b"");

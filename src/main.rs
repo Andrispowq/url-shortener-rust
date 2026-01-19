@@ -11,8 +11,11 @@ use axum::{
     routing::{get, post},
 };
 use tokio::sync::Mutex;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
-use crate::api::links::{LinkServiceState, create_link, visit_link};
+use crate::api::ApiDoc;
+use crate::api::links::{LinkServiceState, create_link, visit_link, get_all_links};
 use crate::persistence::in_memory_store::InMemoryStore;
 use crate::service::code_generator::CodeGenerator;
 use crate::service::link_service::LinkService;
@@ -30,7 +33,9 @@ async fn main() {
 
     let app = Router::new()
         .route("/links", post(create_link))
-        .route("/r/:code", get(visit_link))
+        .route("/r/{code}", get(visit_link))
+        .route("/links", get(get_all_links))
+        .merge(SwaggerUi::new("/docs").url("/api-doc/openapi.json", ApiDoc::openapi()))
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")

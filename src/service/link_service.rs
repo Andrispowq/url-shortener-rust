@@ -6,6 +6,7 @@ use crate::persistence::in_memory_store::{InMemoryStore, Storage};
 use crate::service::code_generator::CodeGenerator;
 
 pub trait LinkServiceTrait {
+    fn get_all_links(&self) -> Vec<LinkDto>;
     fn create_link(&mut self, dto: CreateLinkDto) -> Result<LinkDto, String>;
     fn visit_link(&mut self, code: String) -> Result<LinkDto, String>;
 }
@@ -22,11 +23,14 @@ impl LinkService {
 }
 
 impl LinkServiceTrait for LinkService {
+    fn get_all_links(&self) -> Vec<LinkDto> {
+        self.store.load_all().iter().map(|l| l.to_dto()).collect()
+    }
+    
     fn create_link(&mut self, dto: CreateLinkDto) -> Result<LinkDto, String> {
         let link = Link::new(self.generator.generate()?, dto.target);
-        let dto = link.to_dto();
-        self.store.store(link);
-        Ok(dto)
+        let result = self.store.store(link)?;
+        Ok(result.to_dto())
     }
 
     fn visit_link(&mut self, code: String) -> Result<LinkDto, String> {
