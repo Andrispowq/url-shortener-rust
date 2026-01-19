@@ -20,13 +20,7 @@ impl Link {
             clicks: 0
         }
     }
-    pub fn increased_clicks(self) -> Link {
-        Link {
-            id: self.id,
-            code: self.code,
-            target_url: self.target_url,
-            created_at: self.created_at,
-            clicks: self.clicks + 1
-        }
+    pub fn increase_clicks(&mut self) {
+        self.clicks += 1;
     }
 }

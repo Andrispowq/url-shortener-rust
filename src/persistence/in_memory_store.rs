@@ -31,4 +31,9 @@ impl Storage<Link> for InMemoryStore {
             None => None
         }
     }
+
+    fn get_by_code_mut(&mut self, code: &str) -> Option<&mut Link> {
+        let id = self.code_to_id.get(code)?;
+        self.links.get_mut(id)
+    }
 }
