@@ -3,6 +3,7 @@ mod dto;
 mod models;
 mod persistence;
 mod service;
+mod errors;
 
 use std::sync::Arc;
 

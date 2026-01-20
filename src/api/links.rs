@@ -10,7 +10,10 @@ use tokio::sync::Mutex;
 
 use crate::dto::create_link_dto::CreateLinkDto;
 use crate::dto::link_dto::LinkDto;
+use crate::errors::link_error::LinkError;
 use crate::service::link_service::{LinkService, LinkServiceTrait};
+
+type ErrorResponse = (StatusCode, String);
 
 pub type LinkServiceState = Arc<Mutex<LinkService>>;
 
@@ -27,12 +30,12 @@ pub type LinkServiceState = Arc<Mutex<LinkService>>;
 pub async fn create_link(
     State(state): State<LinkServiceState>,
     Json(payload): Json<CreateLinkDto>,
-) -> Result<(StatusCode, Json<LinkDto>), (StatusCode, String)> {
+) -> Result<(StatusCode, Json<LinkDto>), ErrorResponse> {
     let mut service = state.lock().await;
     service
         .create_link(payload)
         .map(|dto| (StatusCode::CREATED, Json(dto)))
-        .map_err(|err| (StatusCode::CONFLICT, err))
+        .map_err(|err| err.to_response())
 }
 
 #[utoipa::path(
@@ -51,12 +54,11 @@ pub async fn create_link(
 pub async fn visit_link(
     State(state): State<LinkServiceState>,
     Path(code): Path<String>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, ErrorResponse> {
     let mut service = state.lock().await;
     match service.visit_link(code) {
         Ok(link) => Ok(Redirect::temporary(&link.target_url)),
-        Err(err) if err == "No such link" => Err(StatusCode::NOT_FOUND),
-        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(err) => Err(err.to_response())
     }
 }
 
@@ -73,4 +75,15 @@ pub async fn get_all_links(
 ) -> (StatusCode, Json<Vec<LinkDto>>) {
     let service = state.lock().await;
     (StatusCode::OK, Json::from(service.get_all_links()))
+}
+
+impl LinkError {
+    pub fn to_response(&self) -> ErrorResponse {
+        match self {
+            LinkError::LinkNotFoundByCode { code } => (StatusCode::NOT_FOUND, format!("Link with code {} not found", code)),
+            LinkError::LinkNotFoundById { id } => (StatusCode::NOT_FOUND, format!("Link with id {} not found", id)),
+            LinkError::ConflictOnCreate { target } => (StatusCode::CONFLICT, format!("Target \"{}\" already exists", target)),
+            LinkError::CouldNotGenerateCode => (StatusCode::INTERNAL_SERVER_ERROR, String::from("Could not generate code")),
+        }
+    }
 }

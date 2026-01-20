@@ -1,5 +1,6 @@
 use rand::rngs::ThreadRng;
 use rand::Rng;
+use crate::errors::link_error::LinkError;
 
 pub struct CodeGenerator {
     length: usize,
@@ -21,10 +22,10 @@ impl CodeGenerator {
         out
     }
 
-    pub fn generate(&self) -> Result<String, String> {
+    pub fn generate(&self) -> Result<String, LinkError> {
         const ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxzy";
         let result = self.random_bytes_from_alphabet(&mut rand::rng(), ALPHABET);
-        String::from_utf8(result).map_err(|e| e.to_string())
+        String::from_utf8(result).map_err(|_| LinkError::CouldNotGenerateCode)
     }
 }
 
